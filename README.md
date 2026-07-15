@@ -1,4 +1,4 @@
-# trixel-framework
+# TRIXEL Framework
 Reference implementation of the TRIXEL calibrator system (SD, VD, VS) — minimum for maximum.
 TRIXEL Framework
 https://doi.org/10.5281/zenodo.20721811
