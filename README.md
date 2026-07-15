@@ -26,8 +26,10 @@ https://doi.org/10.5281/zenodo.20610880
 Installation
 bash
 pip install numpy scipy
+
 Quick start
 python
+
 import numpy as np
 from calibrators import compute_all, dominant_calibrator, check_algebraic_identity
 
