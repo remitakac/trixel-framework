@@ -46,11 +46,13 @@ print(f"Identity VD/VS = SD holds: {holds} (error: {err:.2e})")
 dom = dominant_calibrator(c['SD'], c['n'])
 Example notebook: examples/basic_usage.ipynb
 
-The three calibrators
-Calibrator	Formula	Meaning
-SD	\	dD/dS\		How fast dynamics change with structure
-VS	1/\	dV/dS\		Sensitivity of existence to structural change
-VD	SD/n	Bridge between dynamics and existence
+## The three calibrators
+
+| Calibrator | Formula     | Meaning                                      |
+|-------------|-------------|----------------------------------------------|
+| SD          | \|dD/dS\|   | How fast dynamics change with structure      |
+| VS          | 1/\|dV/dS\| | Sensitivity of existence to structural change |
+| VD          | SD/n        | Bridge between dynamics and existence        |
 
 
 Exact identity: VD / VS = SD
