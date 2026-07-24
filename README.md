@@ -77,7 +77,7 @@ VS early warning — Burgers turbulence (90/90 runs, FP=0%, FN=0%)
 
 Cross-domain validation — Lotka–Volterra ecology
 
-Real tokamak data — VS identifies stable plasma phases in GOLEM
+Real tokamak data — VS identifies stable plasma phases in GOLEM (5 shots, metadata + raw oscilloscope data).
 
 Not yet verified
 VS as disruption precursor on real tokamak data
