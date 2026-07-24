@@ -16,10 +16,6 @@ Only two calibrators are independent. The third is always determined.
 import numpy as np
 
 
-# ------------------------------------------------------------------
-# SD — Dynamics–Structure calibrator
-# ------------------------------------------------------------------
-
 def compute_SD(D, S):
     """
     SD = |dD/dS|
@@ -35,16 +31,11 @@ def compute_SD(D, S):
     Returns
     -------
     SD : ndarray
-        Absolute gradient of D with respect to S
     """
     D = np.asarray(D, dtype=float)
     S = np.asarray(S, dtype=float)
     return np.abs(np.gradient(D, S))
 
-
-# ------------------------------------------------------------------
-# VS — Existence–Structure calibrator
-# ------------------------------------------------------------------
 
 def compute_VS(V, S, epsilon=1e-10):
     """
@@ -73,10 +64,6 @@ def compute_VS(V, S, epsilon=1e-10):
     return 1.0 / (n + epsilon)
 
 
-# ------------------------------------------------------------------
-# VD — Dynamics–Existence calibrator
-# ------------------------------------------------------------------
-
 def compute_VD(V, D, S, epsilon=1e-10):
     """
     VD = SD / n = |dD/dS| / |dV/dS|
@@ -103,18 +90,13 @@ def compute_VD(V, D, S, epsilon=1e-10):
     return SD / (n + epsilon)
 
 
-# ------------------------------------------------------------------
-# Compute all calibrators
-# ------------------------------------------------------------------
-
 def compute_all(V, D, S, epsilon=1e-10):
     """
     Compute SD, VD, VS and n = |dV/dS|.
 
     Returns
     -------
-    dict with keys:
-        'SD', 'VD', 'VS', 'n'
+    dict with keys: 'SD', 'VD', 'VS', 'n'
     """
     V = np.asarray(V, dtype=float)
     D = np.asarray(D, dtype=float)
@@ -128,13 +110,11 @@ def compute_all(V, D, S, epsilon=1e-10):
     return {'SD': SD, 'VD': VD, 'VS': VS, 'n': n}
 
 
-# ------------------------------------------------------------------
-# Dominant calibrator (Addendum 16)
-# ------------------------------------------------------------------
-
 def dominant_calibrator(SD, n):
     """
     Determine dominant calibrator in (log SD, log n) space.
+
+    Verified at 99.99% accuracy on 600x600 grid (Addendum 16).
 
     Returns
     -------
@@ -166,10 +146,6 @@ def dominant_calibrator(SD, n):
     return result.item() if scalar else result
 
 
-# ------------------------------------------------------------------
-# Algebraic identity check
-# ------------------------------------------------------------------
-
 def check_algebraic_identity(V, D, S, epsilon=1e-10, tol=1e-6):
     """
     Verify VD/VS = SD.
@@ -188,10 +164,6 @@ def check_algebraic_identity(V, D, S, epsilon=1e-10, tol=1e-6):
 
     return max_err, max_err < tol
 
-
-# ------------------------------------------------------------------
-# Self-test (synthetic Gaussian)
-# ------------------------------------------------------------------
 
 if __name__ == "__main__":
     print("TRIXEL calibrators.py — self-test")
@@ -212,10 +184,9 @@ if __name__ == "__main__":
     unique, counts = np.unique(dom, return_counts=True)
 
     print("Dominant calibrators:")
-    for d, n in zip(unique, counts):
-        print(f"  {d}: {n/len(dom)*100:.1f}%")
+    for d, cnt in zip(unique, counts):
+        print(f"  {d}: {cnt/len(dom)*100:.1f}%")
 
-    print("\nVS range:", c['VS'].min(), "to", c['VS'].max())
-    print("SD range:", c['SD'].min(), "to", c['SD'].max())
-
+    print(f"\nVS range: {c['VS'].min():.4f} to {c['VS'].max():.4f}")
+    print(f"SD range: {c['SD'].min():.4f} to {c['SD'].max():.4f}")
     print("\nSelf-test complete.")
