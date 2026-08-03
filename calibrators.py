@@ -164,6 +164,46 @@ def check_algebraic_identity(V, D, S, epsilon=1e-10, tol=1e-6):
 
     return max_err, max_err < tol
 
+def compute_residuum(VD, VS, SD, epsilon=1e-10):
+    """
+    TRIXEL Residuum R = |log(VD) - log(VS) - log(SD)|
+    
+    Measures departure from the stability plane.
+    R = 0: system is internally consistent.
+    R rising: system losing consistency - early warning signal.
+    
+    Requires independent V, D, S (check with check_independence first).
+    """
+    return np.abs(
+        np.log(VD + epsilon) - 
+        np.log(VS + epsilon) - 
+        np.log(SD + epsilon)
+    )
+
+
+def check_independence(V, D, S, tol=1e-3):
+    """
+    Jacobian rank test: are V, D, S genuinely independent?
+    
+    Returns rank (should be 3 for valid R computation).
+    If rank < 3: D is likely computed from V. R would be artifact.
+    
+    Rule: If D does not have its own cable, R is not physical.
+    """
+    J = np.vstack([
+        np.asarray(V, dtype=float),
+        np.asarray(D, dtype=float),
+        np.asarray(S, dtype=float)
+    ])
+    rank = np.linalg.matrix_rank(J, tol=tol)
+    if rank < 3:
+        import warnings
+        warnings.warn(
+            f"rank={rank} < 3: V, D, S not independent. "
+            "R would be a numerical artifact, not a physical signal. "
+            "Find an independent measurement for D."
+        )
+    return rank
 
 if __name__ == "__main__":
     print("TRIXEL calibrators.py — self-test")
