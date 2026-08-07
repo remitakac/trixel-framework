@@ -188,7 +188,7 @@ def check_independence(V, D, S, tol=1e-3):
     Returns rank (should be 3 for valid R computation).
     If rank < 3: D is likely computed from V. R would be artifact.
 
-    NOTE (Addendum 45, 2026-08-07): this test detects only LINEAR
+    NOTE: this test detects only LINEAR
     dependence between V, D, S. If D is a NONLINEAR function of V
     (e.g. D computed as a derivative or other nonlinear transform of V),
     this test can report rank=3 (falsely appearing independent) even
@@ -220,7 +220,7 @@ def check_functional_dependence(V, D, S, correlation_threshold=0.95):
     (e.g. derivative) dependence of D on V that the linear rank test
     misses.
 
-    Background (Addendum 45, 2026-08-07): check_independence() uses
+    Background: check_independence() uses
     np.linalg.matrix_rank, which only detects linear combinations.
     If D = f(V) for some nonlinear f (most commonly D computed as a
     derivative of V), matrix_rank typically still reports rank=3,
@@ -295,7 +295,7 @@ if __name__ == "__main__":
     print(f"\nVS range: {c['VS'].min():.4f} to {c['VS'].max():.4f}")
     print(f"SD range: {c['SD'].min():.4f} to {c['SD'].max():.4f}")
 
-    # --- Independence First Rule demonstration (Addendum 45) ---
+    # --- Independence First Rule demonstration ---
     # This self-test's D IS a deterministic (nonlinear) function of V,
     # by construction (D = -gradient(V, S)). This block shows why that
     # matters: the linear rank test alone would miss it.
@@ -308,4 +308,4 @@ if __name__ == "__main__":
           f"(correctly flags the dependence)")
     print("This demonstrates why check_functional_dependence() is a "
           "necessary supplement to check_independence(), not a "
-          "redundant check -- see docs/mapping_guide.md, Mistake 4.")
+          "redundant check.")
