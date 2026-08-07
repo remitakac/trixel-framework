@@ -184,10 +184,18 @@ def compute_residuum(VD, VS, SD, epsilon=1e-10):
 def check_independence(V, D, S, tol=1e-3):
     """
     Jacobian rank test: are V, D, S genuinely independent?
-    
+
     Returns rank (should be 3 for valid R computation).
     If rank < 3: D is likely computed from V. R would be artifact.
-    
+
+    NOTE (Addendum 45, 2026-08-07): this test detects only LINEAR
+    dependence between V, D, S. If D is a NONLINEAR function of V
+    (e.g. D computed as a derivative or other nonlinear transform of V),
+    this test can report rank=3 (falsely appearing independent) even
+    though D carries no independent information. Use
+    check_functional_dependence() as a supplementary check when D's
+    provenance is uncertain.
+
     Rule: If D does not have its own cable, R is not physical.
     """
     J = np.vstack([
@@ -204,6 +212,63 @@ def check_independence(V, D, S, tol=1e-3):
             "Find an independent measurement for D."
         )
     return rank
+
+
+def check_functional_dependence(V, D, S, correlation_threshold=0.95):
+    """
+    Supplementary check to check_independence(): detects NONLINEAR
+    (e.g. derivative) dependence of D on V that the linear rank test
+    misses.
+
+    Background (Addendum 45, 2026-08-07): check_independence() uses
+    np.linalg.matrix_rank, which only detects linear combinations.
+    If D = f(V) for some nonlinear f (most commonly D computed as a
+    derivative of V), matrix_rank typically still reports rank=3,
+    giving a false sense of independence. This was confirmed on this
+    module's own __main__ self-test case (D = -gradient(V, S)), which
+    passes check_independence() (rank=3) despite D being fully
+    determined by V.
+
+    This function instead checks correlation between D and the SIGNED
+    causal numerical derivative of V with respect to S. An unsigned
+    (absolute value) version of this check gives false negatives near
+    sign changes (e.g. around extrema of V) — the sign must be
+    preserved for the check to be meaningful.
+
+    Parameters
+    ----------
+    V, D, S : array-like
+        Same signals passed to check_independence().
+    correlation_threshold : float
+        Absolute correlation above which a warning is raised
+        (default 0.95).
+
+    Returns
+    -------
+    corr : float
+        Correlation between D and signed dV/dS. Values near +-1
+        indicate D is likely a (near-)deterministic function of V;
+        values near 0 support genuine independence.
+    """
+    V = np.asarray(V, dtype=float)
+    D = np.asarray(D, dtype=float)
+    S = np.asarray(S, dtype=float)
+
+    dS = np.diff(S)
+    dS[dS == 0] = 1e-12
+    grad_VS = np.diff(V) / dS
+    grad_VS = np.insert(grad_VS, 0, grad_VS[0])  # signed, causal
+
+    corr = np.corrcoef(D, grad_VS)[0, 1]
+    if abs(corr) > correlation_threshold:
+        import warnings
+        warnings.warn(
+            f"D has high correlation ({corr:.3f}) with signed dV/dS. "
+            "D is likely nonlinearly derived from V — "
+            "check_independence() (rank test) will not catch this."
+        )
+    return corr
+
 
 if __name__ == "__main__":
     print("TRIXEL calibrators.py — self-test")
@@ -229,4 +294,18 @@ if __name__ == "__main__":
 
     print(f"\nVS range: {c['VS'].min():.4f} to {c['VS'].max():.4f}")
     print(f"SD range: {c['SD'].min():.4f} to {c['SD'].max():.4f}")
-    print("\nSelf-test complete.")
+
+    # --- Independence First Rule demonstration (Addendum 45) ---
+    # This self-test's D IS a deterministic (nonlinear) function of V,
+    # by construction (D = -gradient(V, S)). This block shows why that
+    # matters: the linear rank test alone would miss it.
+    print("\n--- Independence checks (this self-test's D is derived from V) ---")
+    rank = check_independence(V, D, S)
+    func_corr = check_functional_dependence(V, D, S)
+    print(f"check_independence (linear rank test): rank={rank} "
+          f"(reports 3 -- FALSE POSITIVE for independence)")
+    print(f"check_functional_dependence (nonlinear test): corr={func_corr:.4f} "
+          f"(correctly flags the dependence)")
+    print("This demonstrates why check_functional_dependence() is a "
+          "necessary supplement to check_independence(), not a "
+          "redundant check -- see docs/mapping_guide.md, Mistake 4.")
